@@ -220,10 +220,19 @@ body{background:var(--surface-gradient);background-attachment:fixed}
 #page-recipes textarea[name="ingredients"]{min-height:140px}
 #page-recipes textarea[name="steps"]{min-height:185px}
 .nexus-command-effects{position:fixed;inset:0;z-index:1300;overflow:hidden;pointer-events:none;contain:strict}
-.nexus-command-emoji{position:absolute;top:-12vh;left:var(--x);font-size:var(--size);opacity:0;filter:drop-shadow(0 3px 7px #0005);animation:nexus-command-fall var(--dur) linear var(--delay) both;will-change:transform,opacity;user-select:none}
+.nexus-command-emoji{position:absolute;top:-12vh;left:var(--x);font-size:var(--size);opacity:0;filter:drop-shadow(0 3px 7px #0005);animation:nexus-command-fall var(--dur) linear var(--delay) infinite;will-change:transform,opacity;user-select:none}
 @keyframes nexus-command-fall{0%{transform:translate3d(0,-5vh,0) rotate(0);opacity:0}10%{opacity:var(--opacity,.85)}85%{opacity:var(--opacity,.85)}100%{transform:translate3d(var(--drift),115vh,0) rotate(var(--spin));opacity:0}}
+#seasonal-effects .season-particle.season-symbol{top:var(--y,auto);font-size:var(--size,26px);filter:drop-shadow(0 3px 5px #0005)}
+#seasonal-effects .season-particle.spring-creature{top:var(--y);animation-name:season-creature-flight;animation-timing-function:ease-in-out}
+#seasonal-effects .season-particle.halloween-icon{top:var(--y);animation-name:season-spooky-float;animation-timing-function:ease-in-out}
+@keyframes season-creature-flight{0%,100%{transform:translate3d(-12vw,0,0) rotate(-8deg);opacity:0}12%,82%{opacity:.9}50%{transform:translate3d(var(--drift,18vw),-7vh,0) rotate(8deg);opacity:1}}
+@keyframes season-spooky-float{0%,100%{transform:translate3d(0,2vh,0) rotate(-8deg) scale(.88);opacity:.25}50%{transform:translate3d(var(--drift,4vw),-4vh,0) rotate(8deg) scale(1.08);opacity:.9}}
+#seasonal-effects .season-particle.newyear-firework{top:var(--y);font-size:clamp(24px,3vw,42px);animation-name:season-firework-pop;animation-timing-function:ease-out}
+@keyframes season-firework-pop{0%,65%,100%{opacity:0;transform:translateY(8px) scale(.25) rotate(0);filter:brightness(1)}72%{opacity:1;transform:translateY(-5px) scale(1.15) rotate(12deg);filter:brightness(1.5) drop-shadow(0 0 12px currentColor)}82%{opacity:.95;transform:translateY(-18px) scale(1.45) rotate(-8deg);filter:brightness(1.3) drop-shadow(0 0 18px currentColor)}90%{opacity:0;transform:translateY(-26px) scale(1.8)}}
+#seasonal-effects .season-particle.beachball{top:68%;font-size:clamp(34px,5vw,58px);animation-name:season-beachball-hop;animation-timing-function:ease-in-out;animation-direction:alternate}
+@keyframes season-beachball-hop{0%{transform:translate3d(-12vw,0,0) rotate(-25deg);opacity:0}8%{opacity:.95}22%{transform:translate3d(12vw,-20vh,0) rotate(70deg)}42%{transform:translate3d(32vw,0,0) rotate(170deg)}60%{transform:translate3d(54vw,-24vh,0) rotate(260deg)}78%{transform:translate3d(76vw,0,0) rotate(350deg)}100%{transform:translate3d(112vw,-10vh,0) rotate(500deg);opacity:.9}}
 @media(max-width:760px){.flashcard-editor-layout{grid-template-columns:1fr}.flashcard-overview-stats .stat{padding:8px}.flashcard-overview-stats .stat-value{font-size:22px}.diary-switcher .btn{min-width:0}.grade-conversion-table{min-width:250px}}
-@media(prefers-reduced-motion:reduce){.nexus-command-emoji{animation-duration:20s!important;filter:none!important}}
+@media(prefers-reduced-motion:reduce){.nexus-command-emoji{filter:none!important}.season-particle.beachball{animation-duration:24s!important}.season-particle.newyear-firework{animation-duration:12s!important}}
 
 </style>
 </head>
@@ -272,7 +281,7 @@ body{background:var(--surface-gradient);background-attachment:fixed}
 <script>
 (() => {
 'use strict';
-const RELEASE=Object.freeze({version:'6.3.0',noticeKey:'6.3.0-recipes-grades-flashcards-diaries',title:'NEXUS 6.3.0',subtitle:'Mehr Ordnung. Mehr Ausdruck. Ein klarerer Workspace.'});
+const RELEASE=Object.freeze({version:'6.3.1',noticeKey:'6.3.1-terminal-effects-seasonal-motion',title:'NEXUS 6.3.1',subtitle:'Mehr Leben. Mehr Kontrolle. Ein lebendigeres NEXUS.'});
 const VERSION=RELEASE.version;
 const BACKUP_SCHEMA_VERSION=2;
 const STORAGE_KEY='nexus.personal-os.v3';
@@ -690,13 +699,22 @@ function renderStatistics(){
 }
 function renderTerminal(){
  const history=Array.isArray(state.settings.terminalHistory)?state.settings.terminalHistory:[];
- $('#page-terminal').innerHTML=pageHeader('ADVANCED CONSOLE // 21','Terminal 2.0','Eine lokale Kommandozentrale für schnelle NEXUS-Aktionen. Es werden ausschließlich die unten dokumentierten Befehle ausgeführt – kein beliebiger JavaScript-Code.')+`<div class="card"><div class="item-meta"><span class="pill good">Advanced Mode aktiv</span><span class="pill">Lokal</span><span class="pill">Befehle: /help</span></div><div class="terminal-window"><div class="terminal-top"><span class="terminal-dot"></span><span class="terminal-dot" style="background:#ffd166"></span><span class="terminal-dot" style="background:#ff6b8a"></span><b>NEXUS TERMINAL 2.0</b><span style="margin-left:auto;color:#78b39b">v${VERSION}</span></div><div class="terminal-output" id="terminal-output">${history.length?history.map(l=>`<div class="terminal-line ${esc(l.type||'info')}"><span class="terminal-time">${esc(l.time||'')}</span>${esc(l.text)}</div>`).join(''):'<div class="terminal-line info">NEXUS Terminal bereit. Gib /help ein, um alle Befehle zu sehen.</div>'}</div><form class="terminal-form" id="terminal-form"><input class="terminal-input" id="terminal-command" autocomplete="off" spellcheck="false" placeholder="/help, /goto vault, /season winter …"><button class="btn" type="submit">Ausführen ↵</button></form></div></div><div class="grid2" style="margin-top:13px"><div class="card"><h3>Befehle</h3><div class="item-list"><div class="item"><b>/help</b><p>Zeigt alle verfügbaren Befehle.</p></div><div class="item"><b>/goto &lt;bereich&gt;</b><p>Öffnet z. B. dashboard, tasks, planner, vault, statistics, notifications oder settings.</p></div><div class="item"><b>/season &lt;zeit&gt;</b><p>Testet winter, spring, summer, autumn, fasching, halloween, silvester oder reset.</p></div><div class="item"><b>/theme &lt;name&gt;</b><p>Aktiviert eines der installierten Themes, z. B. cyber, galaxy oder sakura.</p></div><div class="item"><b>/stats · /backup · /clear</b><p>Zeigt Kernstatistiken, exportiert ein Backup oder leert die Terminal-Historie.</p></div></div></div><div class="card"><h3>Datenschutz & Kontrolle</h3><p>Das Terminal führt nur bekannte Befehle aus. Es kann weder beliebige Skripte ausführen noch auf externe Systeme zugreifen.</p><p class="small-note">Die Befehlshistorie wird lokal gespeichert. Sie kann mit /clear geleert werden und ist Teil des NEXUS-Backups.</p><button class="btn danger" data-action="terminal-clear">Historie löschen</button></div></div>`;
+ $('#page-terminal').innerHTML=pageHeader('ADVANCED CONSOLE // 21','Terminal 2.0','Eine lokale Kommandozentrale für schnelle NEXUS-Aktionen. Es werden ausschließlich die unten dokumentierten Befehle ausgeführt – kein beliebiger JavaScript-Code.')+`<div class="card"><div class="item-meta"><span class="pill good">Advanced Mode aktiv</span><span class="pill">Lokal</span><span class="pill">Befehle: /help</span></div><div class="terminal-window"><div class="terminal-top"><span class="terminal-dot"></span><span class="terminal-dot" style="background:#ffd166"></span><span class="terminal-dot" style="background:#ff6b8a"></span><b>NEXUS TERMINAL 2.0</b><span style="margin-left:auto;color:#78b39b">v${VERSION}</span></div><div class="terminal-output" id="terminal-output">${history.length?history.map(l=>`<div class="terminal-line ${esc(l.type||'info')}"><span class="terminal-time">${esc(l.time||'')}</span>${esc(l.text)}</div>`).join(''):'<div class="terminal-line info">NEXUS Terminal bereit. Gib /help ein, um alle Befehle zu sehen.</div>'}</div><form class="terminal-form" id="terminal-form"><input class="terminal-input" id="terminal-command" autocomplete="off" spellcheck="false" placeholder="/help, /goto vault, /season winter …"><button class="btn" type="submit">Ausführen ↵</button></form></div></div><div class="grid2" style="margin-top:13px"><div class="card"><h3>Befehle</h3><div class="item-list"><div class="item"><b>/help</b><p>Zeigt alle verfügbaren Befehle.</p></div><div class="item"><b>/goto &lt;bereich&gt;</b><p>Öffnet z. B. dashboard, tasks, planner, vault, statistics, notifications oder settings.</p></div><div class="item"><b>/season &lt;zeit&gt; · /effect create &lt;Emoji&gt;</b><p>Testet Jahreszeiten oder startet einen Emoji-Effekt für exakt 60 Sekunden. Beispiel: /effect create 🪙. Auch nexus.command('/effect create 🪙') wird unterstützt.</p></div><div class="item"><b>/theme &lt;name&gt;</b><p>Aktiviert eines der installierten Themes, z. B. cyber, galaxy oder sakura.</p></div><div class="item"><b>/stats · /backup · /clear</b><p>Zeigt Kernstatistiken, exportiert ein Backup oder leert die Terminal-Historie.</p></div></div></div><div class="card"><h3>Datenschutz & Kontrolle</h3><p>Das Terminal führt nur bekannte Befehle aus. Es kann weder beliebige Skripte ausführen noch auf externe Systeme zugreifen.</p><p class="small-note">Die Befehlshistorie wird lokal gespeichert. Sie kann mit /clear geleert werden und ist Teil des NEXUS-Backups.</p><button class="btn danger" data-action="terminal-clear">Historie löschen</button></div></div>`;
  const output=$('#terminal-output');if(output)output.scrollTop=output.scrollHeight;
 }
 function runTerminalCommand(){
  const input=$('#terminal-command'),command=(input?.value||'').trim();if(!command)return;input.value='';const add=(type,text)=>{state.settings.terminalHistory=Array.isArray(state.settings.terminalHistory)?state.settings.terminalHistory:[];state.settings.terminalHistory.push({type,text,time:new Date().toLocaleTimeString('de-DE',{hour:'2-digit',minute:'2-digit',second:'2-digit'})});if(state.settings.terminalHistory.length>100)state.settings.terminalHistory=state.settings.terminalHistory.slice(-100)};
- add('command','nexus@local:~$ '+command);const parts=command.split(/\s+/),cmd=parts[0].toLowerCase(),arg=parts.slice(1).join(' ').toLowerCase();
- if(cmd==='/help'){add('info','/help · /goto <bereich> · /season <zeit> · /theme <name> · /stats · /vault · /notifications · /backup · /clear')}
+ add('command','nexus@local:~$ '+command);
+ // Accept the same documented NEXUS commands in the terminal as in the F12 console.
+ // Also accept pasted calls such as nexus.command('/effect create 🪙'), without evaluating JavaScript.
+ let routed=command;
+ const wrapper=routed.match(/^nexus\.(?:command|season)\(\s*(['"])([\s\S]*?)\1\s*\)\s*;?$/i);
+ if(wrapper)routed=wrapper[2].replace(/\\(['"\\])/g,'$1');
+ if(/^\/(?:effect|season)\b/i.test(routed)){
+   const result=window.nexusCommand(routed);add(/^Befehl nicht|^Bitte nach/i.test(result)?'error':'info',result);save();renderPage('terminal');$('#terminal-command')?.focus();return;
+ }
+ const parts=command.split(/\s+/),cmd=parts[0].toLowerCase(),arg=parts.slice(1).join(' ').toLowerCase();
+ if(cmd==='/help'){add('info',`/help · /goto <bereich> · /season <zeit> · /effect create <emoji> · /effect clear · nexus.command('/effect create 🪙') · /theme <name> · /stats · /vault · /notifications · /backup · /clear`)}
  else if(cmd==='/goto'){const pages=['dashboard','tasks','planner','projects','journal','dreams','learning','grades','notes','habits','shopping','recipes','time','knowledge','vault','converter','tools','statistics','notifications','settings','credits'];if(pages.includes(arg)){add('info','Öffne Bereich: '+arg);save();renderPage('terminal');go(arg);return}else add('error','Unbekannter Bereich. Nutze /help.')}
  else if(cmd==='/season'){const result=window.nexusCommand('/season '+arg);add(result.startsWith('Befehl nicht')?'error':'info',result)}
  else if(cmd==='/theme'){if(themes[arg]){const t=themes[arg];state.settings.theme=arg;state.settings.customBg=null;state.settings.customPanel=null;state.settings.backgroundStyle='gradient';state.settings.accent=t[2];state.settings.accent2=t[3];state.settings.accent3=t[3];state.settings.accent4=t[2];state.settings.accent5=t[3];applyTheme();add('info','Theme aktiviert: '+arg)}else add('error','Theme unbekannt. Beispiele: cyber, galaxy, sakura, forest.')}
@@ -778,7 +796,7 @@ function showUpdateNotice(){
  if(seen===noticeVersion||document.querySelector('.update-overlay'))return;
  state.settings.updateNoticeSeenVersion=noticeVersion;save();try{localStorage.setItem('nexus.update-notice.seen-version',noticeVersion)}catch(e){}
  const overlay=document.createElement('div');overlay.className='update-overlay';overlay.id='update-notice-overlay';overlay.setAttribute('role','dialog');overlay.setAttribute('aria-modal','true');overlay.setAttribute('aria-labelledby','update-notice-title');
- overlay.innerHTML=`<canvas class="update-fireworks" aria-hidden="true"></canvas><div class="update-dialog"><div class="eyebrow">✦ NEXUS RELEASE</div><h2 id="update-notice-title">${RELEASE.title}</h2><h3 style="margin:5px 0 10px;color:var(--accent);font-size:clamp(19px,3vw,25px)">${RELEASE.subtitle}</h3><p>Dieses Update bündelt wichtige Alltagsfunktionen und macht zentrale Bereiche leichter bedienbar.</p><div class="update-list"><div class="update-entry"><span class="update-icon">♨</span><div><b>Rezepte übertragen</b><span>Import/Export per JSON; längere Zutatenlisten und ausführliche Zubereitungen.</span></div></div><div class="update-entry"><span class="update-icon">％</span><div><b>Noten mit Plus/Minus</b><span>Einträge wie 1− oder 3+ werden berechnet; dazu kommt eine Tabelle für Schulnoten und Punkte.</span></div></div><div class="update-entry"><span class="update-icon">▤</span><div><b>Karteikarten an einem Ort</b><span>Sammlungen, Karten, Import/Export und Lernrunden sind in einem eigenen Menüpunkt gebündelt.</span></div></div><div class="update-entry"><span class="update-icon">✎</span><div><b>Tagebücher zusammengefasst</b><span>Tagebuch und Traumtagebuch lassen sich innerhalb eines gemeinsamen Bereichs umschalten; Inhalte bleiben getrennt.</span></div></div><div class="update-entry"><span class="update-icon">🔔</span><div><b>Benachrichtigungen & Effekte</b><span>Update-Hinweise erscheinen pro Version nur einmal; temporäre Emoji-Effekte können über die Konsole gestartet werden.</span></div></div></div><button class="btn primary" data-action="dismiss-update" style="width:100%;padding:12px">NEXUS 6.3.0 verwenden</button><p class="small-note" style="text-align:center;margin:12px 0 0">Deine vorhandenen Daten bleiben in diesem Browser gespeichert. Ein externes Backup ist weiterhin sinnvoll.</p></div>`;
+ overlay.innerHTML=`<canvas class="update-fireworks" aria-hidden="true"></canvas><div class="update-dialog"><div class="eyebrow">✦ NEXUS RELEASE</div><h2 id="update-notice-title">${RELEASE.title}</h2><h3 style="margin:5px 0 10px;color:var(--accent);font-size:clamp(19px,3vw,25px)">${RELEASE.subtitle}</h3><p>Das Terminal übernimmt die dokumentierten Konsolenbefehle; saisonale Effekte wurden lebendiger gestaltet.</p><div class="update-list"><div class="update-entry"><span class="update-icon">⌘</span><div><b>Konsole und Terminal</b><span>/effect und /season funktionieren jetzt auch im erweiterten Terminal – inklusive nexus.command(...).</span></div></div><div class="update-entry"><span class="update-icon">⏱</span><div><b>Emoji-Effekte für eine Minute</b><span>Ein dichtes Feld aus Partikeln bleibt für exakt 60 Sekunden aktiv.</span></div></div><div class="update-entry"><span class="update-icon">♨</span><div><b>Rezepte übertragen</b><span>Import/Export per JSON; längere Zutatenlisten und ausführliche Zubereitungen.</span></div></div><div class="update-entry"><span class="update-icon">％</span><div><b>Noten mit Plus/Minus</b><span>Einträge wie 1− oder 3+ werden berechnet; dazu kommt eine Tabelle für Schulnoten und Punkte.</span></div></div><div class="update-entry"><span class="update-icon">▤</span><div><b>Karteikarten an einem Ort</b><span>Sammlungen, Karten, Import/Export und Lernrunden sind in einem eigenen Menüpunkt gebündelt.</span></div></div><div class="update-entry"><span class="update-icon">✎</span><div><b>Tagebücher zusammengefasst</b><span>Tagebuch und Traumtagebuch lassen sich innerhalb eines gemeinsamen Bereichs umschalten; Inhalte bleiben getrennt.</span></div></div><div class="update-entry"><span class="update-icon">🔔</span><div><b>Benachrichtigungen & Effekte</b><span>Update-Hinweise erscheinen pro Version nur einmal; temporäre Emoji-Effekte können über die Konsole gestartet werden.</span></div></div></div><button class="btn primary" data-action="dismiss-update" style="width:100%;padding:12px">NEXUS 6.3.0 verwenden</button><p class="small-note" style="text-align:center;margin:12px 0 0">Deine vorhandenen Daten bleiben in diesem Browser gespeichert. Ein externes Backup ist weiterhin sinnvoll.</p></div>`;
  document.body.appendChild(overlay);const canvas=overlay.querySelector('canvas');if(canvas&&typeof startUpdateFireworks==='function')startUpdateFireworks(canvas);
 }
 function dismissUpdateNotice(){const overlay=$('#update-notice-overlay');if(overlay)overlay.remove();state.settings.updateNoticeSeenVersion=RELEASE.noticeKey;save();try{localStorage.setItem('nexus.update-notice.seen-version',RELEASE.noticeKey)}catch(e){} }
@@ -804,6 +822,9 @@ function renderSeasonalEffects(){
  if(season==='summer'){
   const count=lowMotion?2:4;
   for(let i=0;i<count;i++)add('season-beam','',{ '--x':rand(-20,85)+'vw','--delay':(-rand(0,30))+'s','--dur':(lowMotion?45:30+rand(0,18))+'s'});
+  // Beachballs drift and bounce across the screen occasionally, rather than appearing constantly.
+  const balls=lowMotion?1:2;
+  for(let i=0;i<balls;i++)add('beachball','🏖️⚽',{'--x':(-15-rand(0,20))+'vw','--delay':(-rand(0,24))+'s','--dur':(lowMotion?32:19+rand(0,18))+'s','--size':rand(30,48)+'px'});
   return;
  }
  if(season==='spring'){
@@ -813,8 +834,10 @@ function renderSeasonalEffects(){
    const svg='<svg viewBox="0 0 46 25" aria-hidden="true"><path d="M2 13 C7 4 14 5 22 13 C29 5 37 4 44 13 C37 10 31 13 22 20 C14 13 8 10 2 13 Z" fill="currentColor"/><path d="M21 13 Q22 8 26 6 Q25 12 22 15Z" fill="currentColor"/></svg>';
    add('bird',svg,{'--x':rand(-25,85)+'vw','--y':rand(10,75)+'vh','--size':rand(.72,1.12)+'','--dur':(lowMotion?48:30+rand(0,20))+'s','--delay':(-rand(0,45))+'s','--drift':rand(8,20)+'vw','--spin':rand(-18,18)+'deg','--tint':['#e6f5ff','#fff1d2','#dff6e8'][i%3]});
   }
-  const petals=lowMotion?6:13;
-  for(let i=0;i<petals;i++)add('spring-petal','',{ '--x':rand(0,100)+'vw','--size':rand(7,13)+'px','--dur':(lowMotion?42:24+rand(0,24))+'s','--delay':(-rand(0,42))+'s','--drift':rand(-14,14)+'vw','--spin':rand(120,720)+'deg','--tint':['#ffafcc','#ffc8dd','#cdb4db','#fff0a5','#bde0fe'][i%5]});
+  const petals=lowMotion?10:20;
+  for(let i=0;i<petals;i++)add('spring-petal','',{ '--x':rand(0,100)+'vw','--size':rand(7,15)+'px','--dur':(lowMotion?42:20+rand(0,25))+'s','--delay':(-rand(0,42))+'s','--drift':rand(-14,14)+'vw','--spin':rand(120,720)+'deg','--tint':['#ffafcc','#ffc8dd','#cdb4db','#fff0a5','#bde0fe'][i%5]});
+  const springIcons=['🌼','🌷','🌸','🐝','🦋','🐦'];
+  for(let i=0;i<(lowMotion?7:15);i++)add('season-symbol spring-creature',springIcons[i%springIcons.length],{'--x':rand(-10,95)+'vw','--y':rand(8,82)+'vh','--size':rand(19,31)+'px','--dur':(lowMotion?40:18+rand(0,22))+'s','--delay':(-rand(0,35))+'s','--drift':rand(8,30)+'vw','--spin':rand(-12,12)+'deg','--tint':['#f7b8d0','#fff1a8','#d8f3dc'][i%3]});
   return;
  }
  if(season==='fasching'){
@@ -824,12 +847,17 @@ function renderSeasonalEffects(){
  }
  if(season==='halloween'){
   const batSvg='<svg viewBox="0 0 42 25" aria-hidden="true"><path d="M2 6 L9 11 L13 3 L19 11 L21 14 L23 11 L29 3 L33 11 L40 6 L37 19 L30 16 L25 21 L21 17 L17 21 L12 16 L5 19 Z" fill="currentColor"/></svg>';
-  for(let i=0;i<(lowMotion?5:12);i++){const el=add('bat',batSvg,{'--x':rand(-12,92)+'vw','--y':rand(12,78)+'vh','--dur':(lowMotion?48:25+rand(0,24))+'s','--delay':(-rand(0,42))+'s','--drift':rand(60,125)+'vw','--tint':['#21152f','#432353','#8b5cf6'][i%3],'--size':rand(.7,1.4)+''});}
+  for(let i=0;i<(lowMotion?5:10);i++)add('bat',batSvg,{'--x':rand(-12,92)+'vw','--y':rand(12,78)+'vh','--dur':(lowMotion?48:22+rand(0,22))+'s','--delay':(-rand(0,42))+'s','--drift':rand(60,125)+'vw','--tint':['#21152f','#432353','#8b5cf6'][i%3],'--size':rand(.7,1.4)+''});
+  const spooky=['🎃','👻','🕷️','🕸️','🦇','🧙'];
+  for(let i=0;i<(lowMotion?8:18);i++)add('season-symbol halloween-icon',spooky[i%spooky.length],{'--x':rand(2,95)+'vw','--y':rand(8,84)+'vh','--size':rand(20,36)+'px','--dur':(lowMotion?35:8+rand(0,12))+'s','--delay':(-rand(0,20))+'s','--drift':rand(-5,8)+'vw','--spin':rand(-12,12)+'deg','--tint':['#ff8c42','#b7f34a','#c4b5fd'][i%3]});
   for(let i=0;i<(lowMotion?3:7);i++)add('halloween-glow','✦',{'--x':rand(0,96)+'vw','--y':rand(10,85)+'vh','--dur':(lowMotion?30:9+rand(0,9))+'s','--delay':(-rand(0,20))+'s','--tint':['#ff8c42','#ffbd59','#b7f34a'][i%3]});
   return;
  }
  if(season==='silvester'){
-  for(let i=0;i<(lowMotion?5:12);i++)add('newyear-spark','✦',{'--x':rand(4,96)+'vw','--y':rand(5,78)+'vh','--dur':(lowMotion?34:6+rand(0,9))+'s','--delay':(-rand(0,16))+'s','--tint':['#ffd166','#fff7cc','#00e5ff','#ff83c8','#b8a1ff'][i%5]});
+  for(let i=0;i<(lowMotion?5:9);i++)add('newyear-spark','✦',{'--x':rand(4,96)+'vw','--y':rand(5,78)+'vh','--dur':(lowMotion?34:7+rand(0,8))+'s','--delay':(-rand(0,16))+'s','--tint':['#ffd166','#fff7cc','#00e5ff','#ff83c8','#b8a1ff'][i%5]});
+  // Repeated, staggered bursts make fireworks launch at intervals throughout the scene.
+  for(let i=0;i<(lowMotion?4:10);i++)add('newyear-firework','🎆',{'--x':rand(5,88)+'vw','--y':rand(8,58)+'vh','--dur':(lowMotion?16:8+rand(0,9))+'s','--delay':(-rand(0,18))+'s','--tint':['#ffd166','#00e5ff','#ff83c8','#b8a1ff','#a7f3d0'][i%5]});
+  for(let i=0;i<(lowMotion?3:7);i++)add('newyear-firework','🎇',{'--x':rand(5,88)+'vw','--y':rand(10,65)+'vh','--dur':(lowMotion?19:9+rand(0,10))+'s','--delay':(-rand(0,25))+'s','--tint':['#ffd166','#00e5ff','#ff83c8','#b8a1ff'][i%4]});
   return;
  }
  const symbols=season==='winter'?['❄','❅','✧']:['🍂','🍁','🍃'];
@@ -969,10 +997,18 @@ function createTemporaryEmojiEffect(rawEmojis){
  const raw=String(rawEmojis||'').trim().replace(/^(['"])(.*)\1$/s,'$2');
  const tokens=splitEmojiSequence(raw.replace(/[\s,]/g,'')).filter(x=>/[\u{1F000}-\u{1FAFF}\u{2600}-\u{27BF}]/u.test(x)).slice(0,16);
  if(!tokens.length){const msg='Bitte nach /effect create mindestens ein Emoji angeben, z. B. 🌟✨.';console.info(msg);return msg}
- const layer=document.createElement('div');layer.className='nexus-command-effects';layer.setAttribute('aria-hidden','true');
- tokens.forEach((emoji,i)=>{const particle=document.createElement('span');particle.className='nexus-command-emoji';particle.textContent=emoji;particle.style.setProperty('--x',(Math.random()*94)+'%');particle.style.setProperty('--size',(22+Math.random()*34)+'px');particle.style.setProperty('--dur',(10+Math.random()*7)+'s');particle.style.setProperty('--delay',(Math.random()*1.8)+'s');particle.style.setProperty('--drift',((Math.random()*40)-20)+'vw');particle.style.setProperty('--spin',(180+Math.random()*540)+'deg');particle.style.setProperty('--opacity',(0.65+Math.random()*0.3).toFixed(2));layer.appendChild(particle)});
- document.body.appendChild(layer);setTimeout(()=>layer.remove(),22000);
- const msg='Temporärer Emoji-Effekt gestartet ('+tokens.length+' Emojis). Er entfernt sich automatisch nach etwa 22 Sekunden.';console.info(msg);return msg;
+ // Match the dense, screen-wide feel of the seasonal particle layers. The layer itself lasts exactly 60 seconds.
+ const layer=document.createElement('div');layer.className='nexus-command-effects';layer.setAttribute('aria-hidden','true');layer.dataset.expiresAt=String(Date.now()+60000);
+ const lowMotion=!!state.settings.reducedMotion||window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+ const count=lowMotion?28:64;
+ for(let i=0;i<count;i++){
+   const emoji=tokens[i%tokens.length],particle=document.createElement('span');particle.className='nexus-command-emoji';particle.textContent=emoji;
+   particle.style.setProperty('--x',(Math.random()*98)+'vw');particle.style.setProperty('--size',(lowMotion?17:20+Math.random()*30)+'px');
+   particle.style.setProperty('--dur',(lowMotion?32:18+Math.random()*25)+'s');particle.style.setProperty('--delay',(-Math.random()*35)+'s');
+   particle.style.setProperty('--drift',((Math.random()*34)-17)+'vw');particle.style.setProperty('--spin',(180+Math.random()*720)+'deg');particle.style.setProperty('--opacity',(lowMotion?.5:.65+Math.random()*.3).toFixed(2));layer.appendChild(particle);
+ }
+ document.body.appendChild(layer);setTimeout(()=>layer.remove(),60000);
+ const msg='Temporärer Emoji-Effekt gestartet ('+count+' Partikel). Er endet nach exakt 60 Sekunden.';console.info(msg);return msg;
 }
 window.nexusCommand=function(command){
  const raw=String(command||'').trim();
